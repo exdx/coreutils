@@ -1,5 +1,6 @@
 use clap::{App, Arg};
 use colored::{Color, Colorize};
+use std::process;
 
 fn main() {
     let matches = App::new("echo")
@@ -32,7 +33,8 @@ fn main() {
 
     let color = get_color(input_color);
     if color.is_err() {
-        println!("Unrecognized color selected: {}", input_color)
+        println!("Error: unrecognized color selected: {}", input_color);
+        process::exit(1);
     }
 
     let output = format!("{}{}", text.join(" "), if omit_newline { "" } else { "\n" });
@@ -40,6 +42,7 @@ fn main() {
     print!("{}", string);
 }
 
+// TODO: refactor to use Color::FromStr()
 fn get_color(color: &str) -> Result<Color, ()> {
     match color {
         "" => Ok(Color::White),
