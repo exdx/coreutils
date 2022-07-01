@@ -28,7 +28,6 @@ fn run(args: &[&str], expected_file: &str) -> TestResult {
         .success()
         .stdout(expected);
 
-
     Ok(())
 }
 

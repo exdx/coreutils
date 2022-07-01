@@ -1,7 +1,5 @@
-use std::fmt::Debug;
-
 use clap::{App, Arg};
-use colored::{Color, ColoredString, Colorize};
+use colored::{Color, Colorize};
 
 fn main() {
     let matches = App::new("echo")
@@ -39,7 +37,7 @@ fn main() {
 
     let output = format!("{}{}", text.join(" "), if omit_newline { "" } else { "\n" });
     let string = Colorize::color(output.as_str(), color.unwrap());
-    println!("{}", string);
+    print!("{}", string);
 }
 
 fn get_color(color: &str) -> Result<Color, ()> {
