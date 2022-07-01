@@ -26,12 +26,14 @@ pub fn get_args() -> MyResult<Config> {
         .arg(
             Arg::with_name("number")
                 .short("n")
+                .long("number")
                 .takes_value(false)
                 .help("Print line numbers"),
         )
         .arg(
-            Arg::with_name("number_nonblank")
+            Arg::with_name("number-nonblank")
                 .short("b")
+                .long("number-nonblank")
                 .takes_value(false)
                 .help("Print only non-blank line numbers"),
         )
@@ -40,7 +42,7 @@ pub fn get_args() -> MyResult<Config> {
     Ok(Config {
         files: matches.values_of_lossy("files").unwrap(),
         number_lines: matches.is_present("number"),
-        number_nonblank_lines: matches.is_present("number_nonblank"),
+        number_nonblank_lines: matches.is_present("number-nonblank"),
     })
 }
 
@@ -49,20 +51,21 @@ pub fn run(config: Config) -> MyResult<()> {
         match open(&filename) {
             Err(e) => eprintln!("Failed to open {}: {}", filename, e),
             Ok(file) => {
-                // let line_start = 0;
+                let mut last_num = 0;
                 for (line_num, line_result) in file.lines().enumerate() {
                     let line = line_result?;
                     if config.number_lines {
-                        if line.len() != 0 {
-                            println! {"{}\t{}", line_num + 1, line}
-                            continue;
+                        println! {"{:>6}\t{}", line_num + 1, line}
+                    } else if config.number_nonblank_lines {
+                        if !line.is_empty() {
+                            last_num += 1;
+                            println! {"{:>6}\t{}", last_num, line}
+                        } else {
+                            println!();
                         }
+                    } else {
+                        println!("{}", line)
                     }
-                    if config.number_nonblank_lines {
-                        println! {"{} \t{}", line_num + 1, line}
-                        continue;
-                    }
-                    println!("{}", line)
                 }
             }
         }
