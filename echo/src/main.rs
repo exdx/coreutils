@@ -32,13 +32,17 @@ fn main() {
     let input_color = matches.value_of("color").unwrap();
 
     let color = get_color(input_color);
-    if color.is_err() {
-        println!("Error: unrecognized color selected: {}", input_color);
-        process::exit(1);
-    }
+    let c = match color {
+        Err(_) => {
+            // TODO: write to stderr
+            println!("Error: unrecognized color selected: {}", input_color);
+            process::exit(1);
+        }
+        Ok(color) => color,
+    };
 
     let output = format!("{}{}", text.join(" "), if omit_newline { "" } else { "\n" });
-    let string = Colorize::color(output.as_str(), color.unwrap());
+    let string = Colorize::color(output.as_str(), c);
     print!("{}", string);
 }
 
