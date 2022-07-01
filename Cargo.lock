@@ -76,6 +76,7 @@ dependencies = [
  "clap",
  "predicates",
  "rand",
+ "utils",
 ]
 
 [[package]]
