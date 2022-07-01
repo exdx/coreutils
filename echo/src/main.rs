@@ -33,8 +33,7 @@ fn main() {
 
     let color = match utils::colors::get_color(input_color) {
         None => {
-            // TODO: write to stderr
-            println!("Error: unrecognized color selected: {}", input_color);
+            eprintln!("Error: unrecognized color selected: {}", input_color);
             process::exit(1);
         }
         Some(color) => color,
