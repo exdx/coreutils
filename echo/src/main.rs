@@ -31,42 +31,41 @@ fn main() {
     let omit_newline = matches.is_present("omit_newline");
     let input_color = matches.value_of("color").unwrap();
 
-    let color = get_color(input_color);
-    let c = match color {
-        Err(_) => {
+    let color = match get_color(input_color) {
+        None => {
             // TODO: write to stderr
             println!("Error: unrecognized color selected: {}", input_color);
             process::exit(1);
         }
-        Ok(color) => color,
+        Some(color) => color,
     };
 
     let output = format!("{}{}", text.join(" "), if omit_newline { "" } else { "\n" });
-    let string = Colorize::color(output.as_str(), c);
+    let string = Colorize::color(output.as_str(), color);
     print!("{}", string);
 }
 
 // TODO: refactor to use Color::FromStr()
-fn get_color(color: &str) -> Result<Color, ()> {
+fn get_color(color: &str) -> Option<Color> {
     match color {
-        "" => Ok(Color::White),
-        "black" => Ok(Color::Black),
-        "red" => Ok(Color::Red),
-        "green" => Ok(Color::Green),
-        "yellow" => Ok(Color::Yellow),
-        "blue" => Ok(Color::Blue),
-        "magenta" => Ok(Color::Magenta),
-        "purple" => Ok(Color::Magenta),
-        "cyan" => Ok(Color::Cyan),
-        "white" => Ok(Color::White),
-        "bright black" => Ok(Color::BrightBlack),
-        "bright red" => Ok(Color::BrightRed),
-        "bright green" => Ok(Color::BrightGreen),
-        "bright yellow" => Ok(Color::BrightYellow),
-        "bright blue" => Ok(Color::BrightBlue),
-        "bright magenta" => Ok(Color::BrightMagenta),
-        "bright cyan" => Ok(Color::BrightCyan),
-        "bright white" => Ok(Color::BrightWhite),
-        _ => Err(()),
+        "" => Some(Color::White),
+        "black" => Some(Color::Black),
+        "red" => Some(Color::Red),
+        "green" => Some(Color::Green),
+        "yellow" => Some(Color::Yellow),
+        "blue" => Some(Color::Blue),
+        "magenta" => Some(Color::Magenta),
+        "purple" => Some(Color::Magenta),
+        "cyan" => Some(Color::Cyan),
+        "white" => Some(Color::White),
+        "bright black" => Some(Color::BrightBlack),
+        "bright red" => Some(Color::BrightRed),
+        "bright green" => Some(Color::BrightGreen),
+        "bright yellow" => Some(Color::BrightYellow),
+        "bright blue" => Some(Color::BrightBlue),
+        "bright magenta" => Some(Color::BrightMagenta),
+        "bright cyan" => Some(Color::BrightCyan),
+        "bright white" => Some(Color::BrightWhite),
+        _ => None,
     }
 }
