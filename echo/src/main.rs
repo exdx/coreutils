@@ -1,6 +1,6 @@
 use clap::{App, Arg};
-use colored::{Color, Colorize};
 use std::process;
+use utils;
 
 fn main() {
     let matches = App::new("echo")
@@ -31,7 +31,7 @@ fn main() {
     let omit_newline = matches.is_present("omit_newline");
     let input_color = matches.value_of("color").unwrap();
 
-    let color = match get_color(input_color) {
+    let color = match utils::colors::get_color(input_color) {
         None => {
             // TODO: write to stderr
             println!("Error: unrecognized color selected: {}", input_color);
@@ -41,31 +41,6 @@ fn main() {
     };
 
     let output = format!("{}{}", text.join(" "), if omit_newline { "" } else { "\n" });
-    let string = Colorize::color(output.as_str(), color);
+    let string = utils::colors::build_colored_string(output.as_str(), color);
     print!("{}", string);
-}
-
-// TODO: refactor to use Color::FromStr()
-fn get_color(color: &str) -> Option<Color> {
-    match color {
-        "" => Some(Color::White),
-        "black" => Some(Color::Black),
-        "red" => Some(Color::Red),
-        "green" => Some(Color::Green),
-        "yellow" => Some(Color::Yellow),
-        "blue" => Some(Color::Blue),
-        "magenta" => Some(Color::Magenta),
-        "purple" => Some(Color::Magenta),
-        "cyan" => Some(Color::Cyan),
-        "white" => Some(Color::White),
-        "bright black" => Some(Color::BrightBlack),
-        "bright red" => Some(Color::BrightRed),
-        "bright green" => Some(Color::BrightGreen),
-        "bright yellow" => Some(Color::BrightYellow),
-        "bright blue" => Some(Color::BrightBlue),
-        "bright magenta" => Some(Color::BrightMagenta),
-        "bright cyan" => Some(Color::BrightCyan),
-        "bright white" => Some(Color::BrightWhite),
-        _ => None,
-    }
 }
