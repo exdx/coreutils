@@ -24,7 +24,7 @@ pub fn get_args() -> MyResult<Config> {
                 .value_name("FILES")
                 .default_value("-")
                 .multiple(true)
-                .help("File to read from"),
+                .help("File(s) to read from"),
         )
         .arg(
             Arg::with_name("number")
