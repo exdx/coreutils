@@ -8,4 +8,5 @@ Based on the book Command-Line Rust by Ken Youens-Clark.
 
 - [x] echo
 - [x] cat
-- [ ] head
+- [x] head
+- [ ] wc
