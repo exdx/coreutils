@@ -5,7 +5,7 @@ use std::fs;
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 
-const PRG: &str = "wcr";
+const PRG: &str = "wc";
 const EMPTY: &str = "tests/inputs/empty.txt";
 const FOX: &str = "tests/inputs/fox.txt";
 const ATLAMAL: &str = "tests/inputs/atlamal.txt";
@@ -162,8 +162,7 @@ fn atlamal_bytes_lines() -> TestResult {
 #[test]
 fn atlamal_stdin() -> TestResult {
     let input = fs::read_to_string(ATLAMAL)?;
-    let expected =
-        fs::read_to_string("tests/expected/atlamal.txt.stdin.out")?;
+    let expected = fs::read_to_string("tests/expected/atlamal.txt.stdin.out")?;
     Command::cargo_bin(PRG)?
         .write_stdin(input)
         .assert()

@@ -56,8 +56,7 @@ pub fn get_args() -> MyResult<Config> {
                 .help("Whether to print the number of bytes")
                 .short("c")
                 .long("bytes")
-                .takes_value(false)
-                .conflicts_with("chars"),
+                .takes_value(false),
         )
         .arg(
             Arg::with_name("chars")
@@ -65,7 +64,8 @@ pub fn get_args() -> MyResult<Config> {
                 .help("Whether to print the number of chars")
                 .short("m")
                 .long("chars")
-                .takes_value(false),
+                .takes_value(false)
+                .conflicts_with("bytes"),
         )
         .get_matches();
 
@@ -91,56 +91,47 @@ pub fn get_args() -> MyResult<Config> {
 }
 
 pub fn run(config: Config) -> MyResult<()> {
-    let mut counts: Vec<FileInfo> = Vec::new();
+    let mut total_lines = 0;
+    let mut total_words = 0;
+    let mut total_bytes = 0;
+    let mut total_chars = 0;
+
     for filename in &config.files {
         match open(filename) {
             Err(e) => eprintln!("{}: {}", filename, e),
-            Ok(data) => match count(data) {
-                Err(e) => eprintln!("{}: {}", filename, e),
-                Ok(fileinfo) => {
+            Ok(data) => {
+                if let Ok(info) = count(data) {
                     println!(
-                        "{:>6}\t{:<6}\t{:<6}\t{:<6}",
-                        fileinfo.num_lines,
-                        fileinfo.num_words,
-                        if config.chars {
-                            fileinfo.num_chars
+                        "{}{}{}{}{}",
+                        format_field(info.num_lines, config.lines),
+                        format_field(info.num_words, config.words),
+                        format_field(info.num_bytes, config.bytes),
+                        format_field(info.num_chars, config.chars),
+                        if filename == "-" {
+                            "".to_string()
                         } else {
-                            fileinfo.num_bytes
+                            format!(" {}", &filename)
                         },
-                        filename
                     );
-                    counts.push(fileinfo);
+
+                    total_lines += info.num_lines;
+                    total_words += info.num_words;
+                    total_bytes += info.num_bytes;
+                    total_chars += info.num_chars;
                 }
-            },
+            }
         }
     }
 
-    // TODO: sum together all counts to get summary
-    let mut total: FileInfo = FileInfo {
-        num_lines: 0,
-        num_words: 0,
-        num_bytes: 0,
-        num_chars: 0,
-    };
-
-    for info in counts.iter() {
-        total.num_lines += info.num_lines;
-        total.num_words += info.num_words;
-        total.num_bytes += info.num_bytes;
-        total.num_chars += info.num_chars;
+    if config.files.len() > 1 {
+        println!(
+            "{}{}{}{} total",
+            format_field(total_lines, config.lines),
+            format_field(total_words, config.words),
+            format_field(total_bytes, config.bytes),
+            format_field(total_chars, config.chars)
+        );
     }
-
-    println!(
-        "{:>6}\t{:<6}\t{:<6}\t{:<6}",
-        total.num_lines,
-        total.num_words,
-        if config.chars {
-            total.num_chars
-        } else {
-            total.num_bytes
-        },
-        "total",
-    );
 
     Ok(())
 }
@@ -157,28 +148,18 @@ pub fn count(mut file: impl BufRead) -> MyResult<FileInfo> {
     let mut num_words = 0;
     let mut num_bytes = 0;
     let mut num_chars = 0;
+    let mut line = String::new();
 
-    let mut words_offset: bool = true;
-    // Walk through the file one line at a time
-    // Keep a running count of the variables defined above
-    for byte in file.bytes() {
-        match byte {
-            Err(e) => eprintln!("Error reading bytes {}", e),
-            Ok(b) => {
-                num_bytes += 1;
-                num_chars += 1;
-                if b == b'\n' {
-                    num_lines += 1;
-                }
-                if b == b' ' {
-                    if words_offset {
-                        words_offset = false;
-                        num_words += 1;
-                    }
-                    num_words += 1;
-                }
-            }
+    loop {
+        let line_bytes = file.read_line(&mut line)?;
+        if line_bytes == 0 {
+            break;
         }
+        num_bytes += line_bytes;
+        num_lines += 1;
+        num_words += line.split_whitespace().count();
+        num_chars += line.chars().count();
+        line.clear();
     }
 
     Ok(FileInfo {
@@ -189,9 +170,17 @@ pub fn count(mut file: impl BufRead) -> MyResult<FileInfo> {
     })
 }
 
+fn format_field(value: usize, show: bool) -> String {
+    if show {
+        format!("{:>8}", value)
+    } else {
+        "".to_string()
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{count, FileInfo};
+    use super::{count, format_field, FileInfo};
     use std::io::Cursor;
 
     #[test]
@@ -206,5 +195,12 @@ mod tests {
             num_bytes: 48,
         };
         assert_eq!(info.unwrap(), expected);
+    }
+
+    #[test]
+    fn test_format_field() {
+        assert_eq!(format_field(1, false), "");
+        assert_eq!(format_field(3, true), "       3");
+        assert_eq!(format_field(10, true), "      10");
     }
 }
