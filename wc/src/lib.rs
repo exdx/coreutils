@@ -95,19 +95,52 @@ pub fn run(config: Config) -> MyResult<()> {
     for filename in &config.files {
         match open(filename) {
             Err(e) => eprintln!("{}: {}", filename, e),
-            Ok(data) => {
-                match count(data) {
-                    Err(e) => eprintln!("{}: {}", filename, e),
-                    Ok(count) => {
-                        // TODO print formatted file information here
-                        counts.push(count);
-                    }
+            Ok(data) => match count(data) {
+                Err(e) => eprintln!("{}: {}", filename, e),
+                Ok(fileinfo) => {
+                    println!(
+                        "{:>6}\t{:<6}\t{:<6}\t{:<6}",
+                        fileinfo.num_lines,
+                        fileinfo.num_words,
+                        if config.chars {
+                            fileinfo.num_chars
+                        } else {
+                            fileinfo.num_bytes
+                        },
+                        filename
+                    );
+                    counts.push(fileinfo);
                 }
-            }
+            },
         }
     }
 
     // TODO: sum together all counts to get summary
+    let mut total: FileInfo = FileInfo {
+        num_lines: 0,
+        num_words: 0,
+        num_bytes: 0,
+        num_chars: 0,
+    };
+
+    for info in counts.iter() {
+        total.num_lines += info.num_lines;
+        total.num_words += info.num_words;
+        total.num_bytes += info.num_bytes;
+        total.num_chars += info.num_chars;
+    }
+
+    println!(
+        "{:>6}\t{:<6}\t{:<6}\t{:<6}",
+        total.num_lines,
+        total.num_words,
+        if config.chars {
+            total.num_chars
+        } else {
+            total.num_bytes
+        },
+        "total",
+    );
 
     Ok(())
 }
