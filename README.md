@@ -9,4 +9,5 @@ Based on the book Command-Line Rust by Ken Youens-Clark.
 - [x] echo
 - [x] cat
 - [x] head
-- [ ] wc
+- [x] wc
+- [ ] uniq
