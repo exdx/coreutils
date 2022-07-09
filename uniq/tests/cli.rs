@@ -12,7 +12,7 @@ struct Test {
     out_count: &'static str,
 }
 
-const PRG: &str = "uniqr";
+const PRG: &str = "uniq";
 
 const EMPTY: Test = Test {
     input: "tests/inputs/empty.txt",
